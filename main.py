@@ -8,3 +8,16 @@ from database import engine, get_db, User, Skill, Exchange, Review, CategoryEnum
 
 app = FastAPI()
 
+
+
+class User(BaseModel):
+    id: int
+    username: str
+    email: EmailStr
+    password: str
+    space: int | 5
+
+    class Config:
+        orm_mode = True
+
+
