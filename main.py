@@ -114,7 +114,11 @@ async def load_file(
     if user.space < file_size_gb:
         raise HTTPException(status_code=400, detail="Недостатньо місця на диску")
 
-    file_path = os.path.join(UPLOAD_DIR, f"{user.id}_{file.filename}")
+    user_dir = os.path.join(UPLOAD_DIR, str(user.id))
+    os.makedirs(user_dir, exist_ok=True)
+
+    file_path = os.path.join(user_dir, file.filename)
+
     with open(file_path, "wb") as f:
         f.write(contents)
 
@@ -129,3 +133,37 @@ async def load_file(
     db.commit()
 
     return RedirectResponse(url=f"/index?user_id={user.id}", status_code=303)
+
+
+# Скачування та видалення файлів
+@app.get("/download_file/{file_id}")
+async def download_file(file_id: int, db: Session = Depends(get_db)):
+    db_file = db.query(File).filter(File.id == file_id).first()
+    if not db_file or not os.path.exists(db_file.filepath):
+        raise HTTPException(status_code=404, detail="Файл не знайдено")
+
+    return FileResponse(path=db_file.filepath, filename=db_file.filename)
+
+
+@app.post("/delete_file/{file_id}")
+async def delete_file(file_id: int, user_id: int = Form(...), db: Session = Depends(get_db)):
+    db_file = db.query(File).filter(File.id == file_id).first()
+    if not db_file:
+        raise HTTPException(status_code=404, detail="Файл не знайдено")
+
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if os.path.exists(db_file.filepath):
+        os.remove(db_file.filepath)
+
+        user_dir = os.path.dirname(db_file.filepath)
+        if os.path.exists(user_dir) and not os.listdir(user_dir):
+            os.rmdir(user_dir)
+
+    if user:
+        user.space += db_file.file_size_gb
+
+    db.delete(db_file)
+    db.commit()
+
+    return RedirectResponse(url=f"/index?user_id={user_id}", status_code=303)
