@@ -22,8 +22,6 @@ class User(Base):
 
 
 
-
-
 def init_db():
     Base.metadata.create_all(bind=engine)
 
@@ -34,3 +32,5 @@ def get_db() -> Session:
         yield db
     finally:
         db.close()
+
+
