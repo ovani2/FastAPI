@@ -1,15 +1,11 @@
-import enum
-from datetime import datetime, timezone
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Boolean, ForeignKey
-from sqlalchemy.orm import declarative_base, sessionmaker, Session, relationship
+from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, ForeignKey
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
-SQLALCHEMY_DATABASE_URL = "postgresql+psycopg2://postgres:admin@localhost:5432/messenger_db"
+DATABASE_URL = "postgresql+psycopg2://postgres:admin@localhost:5432/drive_db"
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 Base = declarative_base()
-
 
 class User(Base):
     __tablename__ = "users"
@@ -19,32 +15,27 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password = Column(String)
     space = Column(Float, default=5.0)
-
-
     verification_code = Column(String, nullable=True)
     is_active = Column(Boolean, default=False)
 
     files = relationship("File", back_populates="owner", cascade="all, delete-orphan")
 
-
 class File(Base):
     __tablename__ = "files"
 
     id = Column(Integer, primary_key=True, index=True)
-    filename = Column(String, index=True)
+    filename = Column(String)
     filepath = Column(String)
     file_size_gb = Column(Float)
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="files")
 
-
 def init_db():
     Base.metadata.create_all(bind=engine)
 
-
-def get_db() -> Session:
+def get_db():
     db = SessionLocal()
     try:
         yield db

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мої файли - Drive</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/index" class="navbar-brand">🚗 Drive</a>
+            <div class="navbar-user">
+                <div class="user-info">
+                    <div class="user-name">{{ user.username }}</div>
+                    <div class="user-storage">📦 {{ "%.2f"|format(user.space) }} GB доступно</div>
+                </div>
+                <form action="/logout" method="post" style="margin: 0;">
+                    <button type="submit" class="btn btn-secondary btn-small">
+                        Вийти
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="header-section">
+            <h2>Мої файли</h2>
+            <a href="/load_file" class="btn btn-primary btn-small">
+                ➕ Завантажити файл
+            </a>
+        </div>
+
+        {% if files %}
+        <div class="files-grid">
+            {% for file in files %}
+            <div class="file-card">
+                <div class="file-icon">📄</div>
+                <div class="file-info">
+                    <div class="file-name">{{ file.filename }}</div>
+                    <div class="file-size">{{ "%.2f"|format(file.file_size_gb * 1024) }} MB</div>
+                </div>
+                <div class="file-actions">
+                    <a href="/download_file/{{ file.id }}" class="btn btn-primary btn-small">
+                        ⬇️ Завантажити
+                    </a>
+                    <form action="/delete_file/{{ file.id }}" method="post" style="margin: 0; flex: 1;" onsubmit="return confirm('Видалити файл {{ file.filename }}?')">
+                        <button type="submit" class="btn btn-danger btn-small" style="width: 100%;">
+                            🗑️ Видалити
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📂</div>
+            <div class="empty-text">У вас поки немає файлів</div>
+            <div style="margin-top: 24px;">
+                <a href="/load_file" class="btn btn-primary btn-small">
+                    Завантажити перший файл
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

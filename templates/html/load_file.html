@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Завантажити файл - Drive</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="/index" class="navbar-brand">🚗 Drive</a>
+            <div class="navbar-user">
+                <div class="user-info">
+                    <div class="user-name">{{ user.username }}</div>
+                    <div class="user-storage">📦 {{ "%.2f"|format(user.space) }} GB доступно</div>
+                </div>
+                <form action="/logout" method="post" style="margin: 0;">
+                    <button type="submit" class="btn btn-secondary btn-small">
+                        Вийти
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="header-section">
+            <h2>Завантажити файл</h2>
+            <a href="/index" class="btn btn-secondary btn-small">
+                ← Назад
+            </a>
+        </div>
+
+        <div class="card">
+            <form action="/load_file/" method="post" enctype="multipart/form-data" id="uploadForm">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">☁️</div>
+                    <div class="upload-text">
+                        <strong>Перетягніть файл сюди</strong> або натисніть, щоб вибрати
+                    </div>
+                    <div style="margin-top: 12px; color: var(--text-secondary); font-size: 13px;">
+                        Доступно: {{ "%.2f"|format(user.space) }} GB
+                    </div>
+                    <div class="file-input-wrapper" style="margin-top: 20px;">
+                        <input
+                            type="file"
+                            id="file"
+                            name="file"
+                            required
+                            onchange="updateFileName(this)"
+                        >
+                        <label for="file" class="btn btn-primary btn-small" style="cursor: pointer;">
+                            Вибрати файл
+                        </label>
+                    </div>
+                    <div id="fileName" style="margin-top: 16px; color: var(--primary-color); font-weight: 500;"></div>
+                </div>
+
+                <div style="margin-top: 24px;">
+                    <button type="submit" class="btn btn-primary" id="uploadBtn" disabled>
+                        📤 Завантажити файл
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('file');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const fileNameDisplay = document.getElementById('fileName');
+
+        function updateFileName(input) {
+            if (input.files && input.files[0]) {
+                const fileName = input.files[0].name;
+                const fileSize = (input.files[0].size / (1024 * 1024)).toFixed(2);
+                fileNameDisplay.textContent = `✓ ${fileName} (${fileSize} MB)`;
+                uploadBtn.disabled = false;
+            }
+        }
+
+        uploadArea.addEventListener('click', (e) => {
+            if (e.target.id !== 'file') {
+                fileInput.click();
+            }
+        });
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'var(--primary-color)';
+            uploadArea.style.background = 'rgba(79, 70, 229, 0.05)';
+        });
+
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'var(--border-color)';
+            uploadArea.style.background = 'var(--bg-primary)';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'var(--border-color)';
+            uploadArea.style.background = 'var(--bg-primary)';
+
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                updateFileName(fileInput);
+            }
+        });
+
+        document.getElementById('uploadForm').addEventListener('submit', (e) => {
+            uploadBtn.innerHTML = '<span class="loading"></span> Завантаження...';
+            uploadBtn.disabled = true;
+        });
+    </script>
+</body>
+</html>

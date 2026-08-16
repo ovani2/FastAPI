@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Підтвердження - Drive</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>📧 Підтвердження Email</h1>
+                <p>Введіть код з листа</p>
+            </div>
+
+            <div class="alert alert-info">
+                Код відправлено на <strong>{{ email }}</strong>
+            </div>
+
+            <form action="/verify/" method="post">
+                <input type="hidden" name="email" value="{{ email }}">
+
+                <div class="form-group">
+                    <label for="code">Код підтвердження</label>
+                    <input
+                        type="text"
+                        id="code"
+                        name="code"
+                        class="form-control verify-code-input"
+                        placeholder="12345"
+                        maxlength="5"
+                        pattern="[0-9]{5}"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Підтвердити
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <a href="/login">Повернутися до входу</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

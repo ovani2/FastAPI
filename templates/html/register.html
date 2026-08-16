@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реєстрація - Drive</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>🚗 Drive</h1>
+                <p>Створіть новий акаунт</p>
+            </div>
+
+            <form action="/register/" method="post">
+                <div class="form-group">
+                    <label for="username">Ім'я користувача</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        class="form-control"
+                        placeholder="Ваше ім'я"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        class="form-control"
+                        placeholder="your@email.com"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        class="form-control"
+                        placeholder="••••••••"
+                        minlength="6"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Зареєструватися
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                Вже є акаунт? <a href="/login">Увійти</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

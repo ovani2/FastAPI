@@ -19,10 +19,12 @@ from db import get_db, User, File, init_db
 
 load_dotenv()
 
-# Отримуємо ключ із змінних середовища (env)
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
+
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY не знайдено в .env файлі")
 
 resend.api_key = RESEND_API_KEY
 
@@ -53,11 +55,12 @@ def get_current_user(access_token: Optional[str] = Cookie(None), db: Session = D
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неавторизований")
     try:
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: int = payload.get("sub")
-        if user_id is None:
-            raise HTTPException(status_code=401, detail="Невілідний токен")
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Невілідний токен")
+        raw_id = payload.get("sub")
+        if raw_id is None:
+            raise HTTPException(status_code=401, detail="Невалідний токен")
+        user_id = int(raw_id)
+    except (JWTError, ValueError):
+        raise HTTPException(status_code=401, detail="Невалідний токен")
 
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -65,37 +68,36 @@ def get_current_user(access_token: Optional[str] = Cookie(None), db: Session = D
     return user
 
 
-# HTML-сторінки
+# HTML-сторінки (Виправлено синтаксис TemplateResponse)
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
     return RedirectResponse(url="/login", status_code=303)
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request, "login.html")
 
 @app.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse(request, "register.html")
 
 @app.get("/verify", response_class=HTMLResponse)
 async def verify_page(request: Request, email: str):
-    return templates.TemplateResponse("verify.html", {"request": request, "email": email})
+    return templates.TemplateResponse(request, "verify.html", {"email": email})
 
 @app.get("/index", response_class=HTMLResponse)
 async def index_page(
     request: Request, 
     user: User = Depends(get_current_user)
 ):
-    return templates.TemplateResponse("index.html", {
-        "request": request, 
+    return templates.TemplateResponse(request, "index.html", {
         "user": user, 
         "files": user.files
     })
 
 @app.get("/load_file", response_class=HTMLResponse)
 async def load_file_page(request: Request, user: User = Depends(get_current_user)):
-    return templates.TemplateResponse("load_file.html", {"request": request, "user": user})
+    return templates.TemplateResponse(request, "load_file.html", {"user": user})
 
 
 # API Роути
@@ -194,7 +196,7 @@ async def load_file(
     os.makedirs(user_dir, exist_ok=True)
 
     uqi = uuid.uuid4()
-    _, ext = os.path.splitext(file.filename)
+    _, ext = os.path.splitext(file.filename or "")
     file_path = os.path.join(user_dir, f"{uqi}{ext}")
 
     max_allowed_bytes = user.space * (1024 ** 3)
