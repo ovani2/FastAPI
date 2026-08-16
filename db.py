@@ -1,6 +1,6 @@
 import enum
-from datetime import datetime
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, ForeignKey
+from datetime import datetime, timezone
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import declarative_base, sessionmaker, Session, relationship
 
 SQLALCHEMY_DATABASE_URL = "postgresql+psycopg2://postgres:admin@localhost:5432/messenger_db"
@@ -19,7 +19,10 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password = Column(String)
     space = Column(Float, default=5.0)
-    
+
+
+    verification_code = Column(String, nullable=True)
+    is_active = Column(Boolean, default=False)
 
     files = relationship("File", back_populates="owner", cascade="all, delete-orphan")
 
@@ -31,7 +34,7 @@ class File(Base):
     filename = Column(String, index=True)
     filepath = Column(String)
     file_size_gb = Column(Float)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="files")
