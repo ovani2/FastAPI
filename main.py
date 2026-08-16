@@ -5,7 +5,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
-
+import shutil
+import uuid
+import passlib
+import os
 from db import get_db, User, File, init_db
 
 app = FastAPI()
@@ -117,7 +120,12 @@ async def load_file(
     user_dir = os.path.join(UPLOAD_DIR, str(user.id))
     os.makedirs(user_dir, exist_ok=True)
 
-    file_path = os.path.join(user_dir, file.filename)
+    uqi = uuid.uuid4()
+
+    _, ext = os.path.splitext(file.filename)
+    file_path = os.path.join(user_dir, f"{uqi}{ext}")
+
+
 
     with open(file_path, "wb") as f:
         f.write(contents)
